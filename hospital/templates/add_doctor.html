@@ -1,0 +1,35 @@
+{% extends 'navigationbar.html'%}
+<!--inherited this page to be visible here-->
+{% block body %}
+{% load static %}
+<div class="container" style="margin-top:50px">
+    <h2 class="text-center">Add Doctor</h2>
+    <br><br>
+    <form  method="POST" action="">
+        {% csrf_token %} <!-- cross site request forgery, django facility-->
+        <label>Doctor Name</label>
+        <input type="text" class="form-control" name="doc_name" placeholder="Enter Doctor Name" required>
+        <label>Contact</label>
+        <input type="tel" class="form-control" name="doc_cont" placeholder="ex: 9283749821" required>
+        <label>Specialization</label>
+        <input type="text" class="form-control" name="doc_spec" placeholder="ex: cardiology" required>
+        <label>Email</label>
+        <input type="email" class="form-control" name="doc_email" placeholder="ex: ram@gmail.com" required>
+        <br>
+        <input type="submit" value="Submit" class="form-control btn btn-primary">
+    </form>
+</div>
+
+{% if error == "no" %}
+<script>
+    alert('Report saved Successfully');
+    window.location.href = "{% url 'view_doctor' %}";
+</script>
+{% elif error == "yes" %}
+<script>
+    alert('Something went wrong, Try Again!!');
+    window.location.href = "{% url 'add_doctor' %}";
+</script>
+{% endif %}
+
+{% endblock%}

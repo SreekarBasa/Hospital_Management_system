@@ -1,0 +1,45 @@
+{% extends 'navigationbar.html'%}
+<!--inherited this page to be visible here-->
+{% block body %}
+{% load static %}
+<div class="container" style="margin-top:50px">
+    <h2 class="text-center">Add Appointment</h2>
+    <br><br>
+    <form  method="POST">
+        {% csrf_token %} <!-- cross site request forgery, django facility-->
+        <label>Doctor Name</label>
+        <select name="doc_apt" class="form-control">
+            {% for i in doctor %}
+            <option value="{{i.name}}">{{i.name}} [{{i.id}}]</option>
+            {% endfor%}
+        </select>
+        <br>
+        <label>Patient Name</label>
+        <select name="pat_apt" class="form-control">
+            {% for i in patient %}
+            <option value="{{i.name}}">{{i.name}} [{{i.id}}]</option>
+            {% endfor%}
+        </select>
+        <br>
+        <label>Date</label>
+        <input type="date" class="form-control" name="date_apt" required>
+        <label>Time</label>
+        <input type="time" class="form-control" name="time_apt" required>
+        <br>
+        <input type="submit" value="Submit" class="form-control btn btn-primary">
+    </form>
+</div>
+
+{% if error == "no" %}
+<script>
+    alert('Report saved Successfully');
+    window.location.href = "{% url 'view_appointment' %}";
+</script>
+{% elif error == "yes" %}
+<script>
+    alert('Something went wrong, Try Again!!');
+    window.location.href = "{% url 'add_appointment' %}";
+</script>
+{% endif %}
+
+{% endblock%}

@@ -1,0 +1,27 @@
+{% extends 'navigationbar.html'%}
+<!--inherited this page to be visible here-->
+{% block body %}
+{% load static %}
+<div class="container" style="margin-top:50px">
+    <h2 class="text-center">Contact Us</h2>
+    <br><br>
+    <div class="row mt-5">
+        <div class="col-lg-3 col-sm-6">
+            <h4><i class="fas fa-phone-square fa-shake"></i> Contact</h4>
+            <p class="mt-3 font-weight-bold"><a href="tel: +91 9014521919">+91 9014521919</a></p>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <h4><i class="fas fa-envelope"></i> Send Email</h4>
+            <p class="mt-3 font-weight-bold"><a href="mailto:sreekar.basa2004@gmail.com">sreekar.basa2004@gmail.com</a></p>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <h4><i class="fas fa-address-card"></i> Address</h4>
+            <p class="mt-3 font-weight-bold"><a href="https://maps.google.com/maps?q=MMM+Hall+of+Residence+IIT+Kharagpur+Kharagpur+West+Bengal">MMM Hall of Residence, IIT Kharagpur,  Kharagpur, West Bengal</a></p>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <h4><i class="fas fa-time"></i> Service Hours</h4>
+            <p class="mt-3 font-weight-bold text-danger"> 9:00 AM to 10:00 PM </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
