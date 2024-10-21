@@ -30,11 +30,13 @@ class Patient(models.Model):
 class Appointment(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)  # if we delete doctors in above, it gets deleted here also
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    # patient_age = models.IntegerField()
+    # patient_age = models.IntegerField() not needed as of now, can be checked using patient info
     # patient_gender = models.CharField(max_length=5)
     # patient_mobile = models.IntegerField()
     date1 = models.DateField()
     time1 = models.TimeField()
+    status = models.CharField(max_length=10, choices=[('pending', 'pending'), ('Accepted', 'Accepted'), ('Rejected', 'Rejected')], default='Pending')
+    notified = models.BooleanField(default=False)  # default case needed here
 
     def __str__(self):
         return self.doctor.name+"--"+self.patient.name

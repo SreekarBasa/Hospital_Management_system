@@ -11,6 +11,7 @@
                 <th> Patient Name</th>
                 <th> Date</th>
                 <th> Time</th>
+                <th> Status</th>
                 <th> Update</th>
                 <th> Delete</th>
             </tr>
@@ -22,6 +23,7 @@
                 <td>{{i.patient}}</td>
                 <td>{{i.date1}}</td>
                 <td>{{i.time1}}</td>
+                <td>{{i.status}}</td>
                 <td>
                     <!-- Update button to trigger the modal -->
                     <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ i.id }}">

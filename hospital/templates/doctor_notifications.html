@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pending Requests</title>
+</head>
+<body>
+
+</body>
+</html>
+{% for appointment in appointments %}
+    <p>Appointment with {{ appointment.patient.name }} on {{ appointment.date1 }} at {{ appointment.time1 }}</p>
+    <a href="{% url 'accept_appointment' appointment.id %}">Accept</a>
+    <a href="{% url 'reject_appointment' appointment.id %}">Reject</a>
+{% endfor %}

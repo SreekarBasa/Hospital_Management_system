@@ -34,4 +34,7 @@ urlpatterns = [
     path('view_appointment/', View_Appointment, name='view_appointment'),
     path('add_appointment/', Add_Appointment, name='add_appointment'),
     path('delete_appointment(?P<int:pid>)/', Delete_Appointment, name='delete_appointment'),
+    path('accept-appointment/<int:pid>/', Accept_Appointment, name='accept_appointment'),
+    path('reject-appointment/<int:pid>/', Reject_Appointment, name='reject_appointment'),
+    path('update_appointment<int:pid>/', Update_Appointment, name = 'update_appointment')
 ]
