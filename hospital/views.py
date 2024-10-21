@@ -25,16 +25,16 @@ def Index(request):
     doctors = Doctor.objects.all()
     patient = Patient.objects.all()
     appointment = Appointment.objects.all()
-    d = 0;
-    p = 0;
-    a = 0;
+    d = 0
+    p = 0
+    a = 0
     for i in doctors:
-        d+=1
+        d += 1
     for i in patient:
-        p+=1
+        p += 1
     for i in appointment:
-        a+=1
-    x = {'d':d,'p':p,'a':a}
+        a += 1
+    x = {'d': d, 'p': p, 'a': a}
     return render(request, 'index.html', x)
 def Login(request):
     error = ""
@@ -83,6 +83,10 @@ def Add_Doctor(request):
     d = {'error': error}
     return render(request, 'add_doctor.html', d)
 
+def Update_Doctor(request, pid):
+    doc = Doctor.objects.get(id=pid)
+    return render(request, 'doc_update.html', {'doc': doc})
+
 def Delete_Doctor(request, pid): # delete on basis of id
     if not request.user.is_staff:
         return redirect('login')
@@ -115,6 +119,10 @@ def Add_Patient(request):
             error = "yes"
     d = {'error': error}
     return render(request, 'add_patient.html', d)
+
+def Update_Patient(request, pid):
+    pat = Patient.objects.get(id=pid)
+    return render(request, 'pat_update.html', {'pat': pat})
 
 def Delete_Patient(request, pid): # delete on basis of id
     if not request.user.is_staff:
@@ -151,6 +159,21 @@ def Add_Appointment(request):
             print(f"Error creating appointment: {str(e)}")  # Log the specific error
     x = {'error': error, 'doctor': doc, 'patient': pat}
     return render(request, 'add_appointment.html', x)
+
+def Update_Appointment(request, pid):
+    if not request.user.is_staff:
+        return redirect('login')
+    appointment = Appointment.objects.get(id=pid)
+    if request.method == 'POST':
+        # Manually update fields from POST data
+        appointment.doctor = request.POST.get('doctor')
+        appointment.patient = request.POST.get('patient')
+        appointment.date1 = request.POST.get('date1')
+        appointment.time1 = request.POST.get('time1')
+        appointment.save()
+        return render(request, 'view_appointment.html', {'appointment': appointment})
+    else:
+        return redirect('view_appointment')
 
 def Delete_Appointment(request, pid):
     if not request.user.is_staff:
