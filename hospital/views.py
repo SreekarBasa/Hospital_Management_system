@@ -140,25 +140,17 @@ def Update_Patient(request, pid):
         return redirect('login')
     patient = Patient.objects.get(id=pid)
     if request.methos == 'POST':
-        patient.name = request.POST.get('doctor')
-        patient
-    pat = Patient.objects.get(id=pid)
-    return render(request, 'pat_update.html', {'pat': pat})
+        patient.name = request.POST.get('pat')
+        patient.contact = request.POST.get('cont')
+        patient.gender = request.POST.get('gen')
+        patient.age = request.POST.get('age')
+        patient.address = request.POST.get('addr')
+        patient.email = request.POST.get('email')
+        patient.save()
+        return render(request, 'view_patient.html', {'patient': patient})
+    else:
+        return redirect('view_patient')
 
-# def Update_Appointment(request, pid):
-#     if not request.user.is_staff:
-#         return redirect('login')
-#     appointment = Appointment.objects.get(id=pid)
-#     if request.method == 'POST':
-#         # Manually update fields from POST data
-#         appointment.doctor = request.POST.get('doctor')
-#         appointment.patient = request.POST.get('patient')
-#         appointment.date1 = request.POST.get('date1')
-#         appointment.time1 = request.POST.get('time1')
-#         appointment.save()
-#         return render(request, 'view_appointment.html', {'appointment': appointment})
-#     else:
-#         return redirect('view_appointment')
 
 def Delete_Patient(request, pid): # delete on basis of id
     if not request.user.is_staff:
