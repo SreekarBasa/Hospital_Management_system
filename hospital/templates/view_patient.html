@@ -37,6 +37,12 @@
                 </td>
                 <td><a href="{% url 'delete_patient' i.id%}" onclick="return confirm('Really want to delete?')" class="btn btn-danger"> Delete</a></td>
             </tr>
+            <!-- Update button -->
+            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ i.id }}">
+                Update
+            </button>
+
+            <!-- Modal for updating patient -->
             <div class="modal fade" id="updateModal{{ i.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ i.id }}" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -78,6 +84,9 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Include Bootstrap JS (Make sure this is loaded after your modal HTML) -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
             {% endfor %}
         </tbody>

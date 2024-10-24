@@ -89,10 +89,6 @@ def Add_Doctor(request):
     d = {'error': error}
     return render(request, 'add_doctor.html', d)
 
-def Update_Doctor(request, pid):
-    doc = Doctor.objects.get(id=pid)
-    return render(request, 'doc_update.html', {'doc': doc})
-
 def Delete_Doctor(request, pid): # delete on basis of id
     if not request.user.is_staff:
         return redirect('login')
@@ -100,12 +96,26 @@ def Delete_Doctor(request, pid): # delete on basis of id
     doctor.delete()
     return redirect('view_doctor')
 
-def Doctor_Notification(request):
+def Update_Doctor(request, pid):
     if not request.user.is_staff:
         return redirect('login')
-    doctor = Doctor.objects.get(user=request.user)
-    pending_appointments = Appointment.objects.filter(doctor=doctor, status='pending')  # gets all pending requests for that doctor
-    return render(request, 'doctor_notifications.html', {'appointments': pending_appointments})
+    doctor = Doctor.objects.get(id=pid)
+    if request.method == 'POST':
+        doctor.name = request.POST.get('name')
+        doctor.mobile = request.POST.get('mobile')
+        doctor.specialization = request.POST.get('spec')
+        doctor.email = request.POST.get('email')
+        doctor.save()
+        return redirect('view_doctor')  # refresh page -- but anyhow content gets updated
+    else:
+        return redirect('view_doctor')
+
+# def Doctor_Notification(request):
+#     if not request.user.is_staff:
+#         return redirect('login')
+#     doctor = Doctor.objects.get(user=request.user)
+#     pending_appointments = Appointment.objects.filter(doctor=doctor, status='pending')  # gets all pending requests for that doctor
+#     return render(request, 'doctor_notifications.html', {'appointments': pending_appointments})
 
 # ---------------------- PATIENT -----------------------------#
 
@@ -113,7 +123,7 @@ def View_Patient(request):
     if not request.user.is_staff:
         return redirect('login')
     pat = Patient.objects.all()
-    x = {'pat': pat}
+    x = {'pat': pat}  # dictionary
     return render(request, 'view_patient.html', x)
 
 def Add_Patient(request):
@@ -135,29 +145,29 @@ def Add_Patient(request):
     d = {'error': error}
     return render(request, 'add_patient.html', d)
 
-def Update_Patient(request, pid):
-    if not request.user.is_staff:
-        return redirect('login')
-    patient = Patient.objects.get(id=pid)
-    if request.methos == 'POST':
-        patient.name = request.POST.get('pat')
-        patient.contact = request.POST.get('cont')
-        patient.gender = request.POST.get('gen')
-        patient.age = request.POST.get('age')
-        patient.address = request.POST.get('addr')
-        patient.email = request.POST.get('email')
-        patient.save()
-        return render(request, 'view_patient.html', {'patient': patient})
-    else:
-        return redirect('view_patient')
-
-
 def Delete_Patient(request, pid): # delete on basis of id
     if not request.user.is_staff:
         return redirect('login')
     pat = Patient.objects.get(id=pid)
     pat.delete()
     return redirect('view_patient')
+
+def Update_Patient(request, pid):
+    if not request.user.is_staff:
+        return redirect('login')
+    patient = Patient.objects.get(id=pid)
+    if request.method == 'POST':
+        patient.name = request.POST.get('name')
+        patient.contact = request.POST.get('mobile')
+        patient.gender = request.POST.get('gender')
+        patient.age = request.POST.get('age')
+        patient.address = request.POST.get('address')
+        patient.email = request.POST.get('email')
+        patient.save()
+        # return render(request, 'view_patient.html', {'patient': patient}) -- render with new content
+        return redirect('view_patient')  # refresh page -- but anyhow content gets updated
+    else:
+        return redirect('view_patient')
 
 # ---------------------- APPOINTMENT -----------------------------#
 
@@ -167,6 +177,21 @@ def View_Appointment(request):
     apt = Appointment.objects.all()
     x = {'apt': apt}
     return render(request, 'view_appointment.html', x)
+
+def send_appointment_email(doctor, patient, date, time):
+    email_subject = 'New Appointment Request'
+    email_body = f'You have a new appointment request from {patient.name} on {date} at {time}. Please accept or reject the appointment.'
+    sender_email = 'information2leak@gmail.com'
+    try:
+        send_mail(
+            email_subject,
+            email_body,
+            sender_email,
+            [doctor.email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"Error sending email: {str(e)}")
 
 def Add_Appointment(request):
     error = ""
@@ -181,20 +206,21 @@ def Add_Appointment(request):
         time = request.POST.get('time_apt')  # default value also can be used with post.get
         doctor = Doctor.objects.filter(name=doc_name).first()  # first occurrence
         patient = Patient.objects.filter(name=pat_name).first()
-        try:
-            appointment = Appointment.objects.create(doctor=doctor, patient=patient, date1=date, time1=time)
-            # sending email to doctor
-            send_mail(
-                'New Appointment Request',
-                f'You have a new appointment request from {patient.name} on {date} at {time}. Please accept or reject the appointment.',
-                'sreekar.basa2004@gmail.com',  # sender email
-                [doctor.email],  # doctor email - recipient
-                fail_silently=False,
-            )
-            error = "no"
-        except Exception as e:
-            error = "yes"
-            print(f"Error creating appointment: {str(e)}")  # Log the specific error
+        print(doctor.email)
+        if doctor is None or Patient is None:
+            error = "yes"  # no docs or patients
+        else:
+            try:
+                appointment = Appointment.objects.create(
+                    doctor=doctor, patient=patient, date1=date, time1=time
+                )
+                # sending email to doctor
+                send_appointment_email(doctor, patient, date, time)
+                error = "no"
+            except Exception as e:
+                error = "yes"
+                print(f'Error creating appointment: {str(e)}')
+
     x = {'error': error, 'doctor': doc, 'patient': pat}
     return render(request, 'add_appointment.html', x)
 
@@ -204,14 +230,22 @@ def Update_Appointment(request, pid):
     appointment = Appointment.objects.get(id=pid)
     if request.method == 'POST':
         # Manually update fields from POST data
-        appointment.doctor = request.POST.get('doctor')
-        appointment.patient = request.POST.get('patient')
-        appointment.date1 = request.POST.get('date1')
-        appointment.time1 = request.POST.get('time1')
-        appointment.save()
-        return render(request, 'view_appointment.html', {'appointment': appointment})
+        doc_name = request.POST.get('doctor')
+        pat_name = request.POST.get('patient')
+        doctor = Doctor.objects.filter(name=doc_name).first()
+        patient = Patient.objects.filter(name=pat_name).first()
+
+        if doctor is None or patient is None:
+            return redirect('view_appointment')
+        else:
+            appointment.doctor = doctor
+            appointment.patient = patient
+            appointment.date1 = request.POST.get('date1')
+            appointment.time1 = request.POST.get('time1')
+            appointment.save()
+            return redirect('view_appointment')
     else:
-        return redirect('view_appointment')
+        return render(request, 'view_appointment.html', {'appointment': appointment})
 
 def Delete_Appointment(request, pid):
     if not request.user.is_staff:
