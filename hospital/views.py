@@ -3,7 +3,12 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import *
 from django.contrib.auth import authenticate, logout, login
+from django.http import HttpResponse
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404, redirect, render
 
 # created super-user with name-admin
 # email address: admin@gmail.com
@@ -193,36 +198,60 @@ def send_appointment_email(doctor, patient, date, time):
     except Exception as e:
         print(f"Error sending email: {str(e)}")
 
+
 def Add_Appointment(request):
     error = ""
     if not request.user.is_staff:
         return redirect('login')
     doc = Doctor.objects.all()
     pat = Patient.objects.all()
-    if request.method == 'POST':                # why post.get ??
-        doc_name = request.POST.get('doc_apt')  # Retrieves data submitted through a form
-        pat_name = request.POST.get('pat_apt')  # It returns none if key doesn't exist in post data
-        date = request.POST.get('date_apt')  # if POST['key'] is used it leads to error in none case
-        time = request.POST.get('time_apt')  # default value also can be used with post.get
-        doctor = Doctor.objects.filter(name=doc_name).first()  # first occurrence
+    if request.method == 'POST':
+        doc_name = request.POST.get('doc_apt')
+        pat_name = request.POST.get('pat_apt')
+        date = request.POST.get('date_apt')
+        time = request.POST.get('time_apt')
+        doctor = Doctor.objects.filter(name=doc_name).first()
         patient = Patient.objects.filter(name=pat_name).first()
-        print(doctor.email)
-        if doctor is None or Patient is None:
-            error = "yes"  # no docs or patients
+
+        if doctor is None or patient is None:
+            error = "yes"
         else:
             try:
                 appointment = Appointment.objects.create(
                     doctor=doctor, patient=patient, date1=date, time1=time
                 )
-                # sending email to doctor
-                send_appointment_email(doctor, patient, date, time)
+
+                # Generating accept and reject URLs
+                accept_url = request.build_absolute_uri(
+                    reverse('accept_appointment', args=[urlsafe_base64_encode(force_bytes(appointment.id))])
+                )
+                reject_url = request.build_absolute_uri(
+                    reverse('reject_appointment', args=[urlsafe_base64_encode(force_bytes(appointment.id))])
+                )
+
+                # Email content
+                email_subject = 'New Appointment Request'
+                email_body = f"""
+                    You have a new appointment request from {patient.name} on {date} at {time}.
+                    Please respond by clicking one of the following:
+                    Accept: {accept_url}
+                    Reject: {reject_url}
+                """
+                sender_email = 'your-email@gmail.com'
+                send_mail(
+                    email_subject,
+                    email_body,
+                    sender_email,
+                    [doctor.email],
+                    fail_silently=False,
+                )
                 error = "no"
             except Exception as e:
                 error = "yes"
-                print(f'Error creating appointment: {str(e)}')
-
+                print(f"Error creating appointment: {str(e)}")
     x = {'error': error, 'doctor': doc, 'patient': pat}
     return render(request, 'add_appointment.html', x)
+
 
 def Update_Appointment(request, pid):
     if not request.user.is_staff:
@@ -254,21 +283,23 @@ def Delete_Appointment(request, pid):
     apt.delete()
     return redirect('view_appointment')
 
-def Accept_Appointment(request, pid):
+def Accept_Appointment(request, encoded_id):
     if not request.user.is_staff:
         return redirect('login')
-    appointment = Appointment.objects.get(id=pid)  # it will be unique
+    app_id = urlsafe_base64_decode(encoded_id).decode()
+    appointment = get_object_or_404(Appointment, id=app_id)
     appointment.status = 'Accepted'  # update the status of appointment
     appointment.save()  # generates a sql update statement that updates the corresponding record in db
-    return redirect('view_appointment')
+    return HttpResponse('Appointment accepted. Thank you!!')
 
-def Reject_Appointment(request, pid):
+def Reject_Appointment(request, encoded_id):
     if not request.user.is_staff:
         return redirect('login')
-    appointment = Appointment.objects.get(id=pid)
-    appointment.status = 'Rejected'
-    appointment.save()
-    return redirect('view_appointment')
+    app_id = urlsafe_base64_decode(encoded_id).decode()
+    appointment = get_object_or_404(Appointment, id=app_id)
+    appointment.status = 'Rejected'  # update the status of appointment
+    appointment.save()  # generates a sql update statement that updates the corresponding record in db
+    return HttpResponse('Appointment rejected. Thank you!!')
 
 
 
